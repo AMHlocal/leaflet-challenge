@@ -16,35 +16,29 @@ var queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_da
 
 // Perform a GET request to the query URL
 d3.json(queryUrl).then(data => {
-  console.log(data);
   // Once we get a response, send the data.features object to the createFeatures function
   createFeatures(data.features);
 });
 
-// Make a switch function to color code magnitude
-function magColor(mag) {
-    if (mag <= 1) {
-        return "FFCCCC";
-    } else if (mag <= 2) {
-        return "FF9999";
-    } else if (mag <= 3) {
-        return "FF6666";
-    } else if (mag <= 4) {
-        return "FF3333";
-    } else if (mag <= 5) {
-        return "FF0000";
-    } else {
-        return "CC0000";
-    };
+// Make a switch function to color code depth
+// documentation: https://leafletjs.com/examples/choropleth/
+function depthColor(d){
+    return d > 91 ? '#990000' :
+           d > 90  ? '#CC0000' :
+           d > 70  ? '#FF0000' :
+           d > 50  ? '#FF8000' :
+           d > 30   ? '#FF9933' :
+           d > 10   ? '#FFFF33' :
+                      '#99FF33';
 }
 
 function createFeatures(earthquakeData) {
     
     // Define a function we want to run once for each feature in the features array
     // Give each feature a popup describing the place and time of the earthquake
-    function onEachFeature(feature,layer) {
-        layer.bindPopup("<h3>" + feature.properties.title +
-        "</h3><hr><p>" + new Date(feature.properties.time) + "</p>");
+    function onEachFeature(features,layer) {
+        layer.bindPopup("<h3>" + features.properties.title +
+        "</h3><hr><p>" + new Date(features.properties.time) + "</p>");
     }
 
     // Create a GeoJSON layer containing the features array on the earthquakeData object
@@ -55,10 +49,11 @@ function createFeatures(earthquakeData) {
 
     var mags = L.geoJSON(earthquakeData, {
         onEachFeature: onEachFeature,
-        pointToLayer: (feature, latlng) => {
+        pointToLayer: (features, latlng) => {
             return new L.Circle(latlng, {
-            radius: feature.properties.mag*20000,
-            fillColor: magColor,
+            radius: features.properties.mag*20000,
+            fillColor: depthColor(features.geometry.coordinates[2]),
+            fillOpacity: 0.75,
             stroke: false
         });
     }
