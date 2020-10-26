@@ -94,7 +94,9 @@ function createMap(earthquakes, mags) {
     L.control.layers(baseMaps, overlayMaps, {
         collapsed: false
     }).addTo(myMap);
-
+    
+    // Make a legend for the earthquake depth
+    // documentation: https://leafletjs.com/examples/choropleth/
     var legend = L.control({position: 'bottomright'});
     legend.onAdd = function (map) {
         var div = L.DomUtil.create('div', 'info legend'),
