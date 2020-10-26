@@ -18,6 +18,7 @@ var queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_da
 d3.json(queryUrl).then(data => {
   // Once we get a response, send the data.features object to the createFeatures function
   createFeatures(data.features);
+  console.log(data)
 });
 
 // Make a switch function to color code depth
@@ -37,8 +38,8 @@ function createFeatures(earthquakeData) {
     // Define a function we want to run once for each feature in the features array
     // Give each feature a popup describing the place and time of the earthquake
     function onEachFeature(features,layer) {
-        layer.bindPopup("<h3>" + features.properties.title +
-        "</h3><hr><p>" + new Date(features.properties.time) + "</p>");
+        layer.bindPopup("Magnitude: " + features.properties.mag  + "<hr>" +
+         "Depth: " + features.geometry.coordinates[2] + " Km" + "<hr>" + "Location: " + features.properties.place);
     }
 
     // Create a GeoJSON layer containing the features array on the earthquakeData object
@@ -93,4 +94,19 @@ function createMap(earthquakes, mags) {
     L.control.layers(baseMaps, overlayMaps, {
         collapsed: false
     }).addTo(myMap);
+
+    var legend = L.control({position: 'bottomright'});
+    legend.onAdd = function (map) {
+        var div = L.DomUtil.create('div', 'info legend'),
+        depths = [-9, 10, 30, 50, 70, 90, 91],
+        labels = [];
+
+        //loop though out depth intervals and generate a label with a colored square for each interval
+        for (var i = 0; i < depths.length; i++) {
+            div.innerHTML += '<i style="background:' + depthColor(depths[i] + 1) + '"></i>' +
+            depths[i] + (depths[i + 1] ? '&ndash;' + depths[i + 1] + '<br>' : '+');
+        }
+        return div;
+    };
+    legend.addTo(myMap);
 }
